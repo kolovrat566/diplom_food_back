@@ -1,13 +1,14 @@
 const express = require("express");
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { Pool } = require("pg");
+
 const pool = new Pool({
   user: "postgres",
   password: "root",
   host: "localhost",
   port: 5432,
   database: "Users"
-})
+});
 
 const PORT = 8080;
 const app = express();
@@ -18,8 +19,6 @@ app.use('/app/', createProxyMiddleware({
   target: 'http://localhost:3000',
   changeOrigin: true,
 }));
-
-  
 
 app.post('/addUser/', async (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -34,7 +33,8 @@ app.post('/addUser/', async (req, res) => {
   const newContraindicationsId = contraindicationsId?.rows[0]?.id == undefined ? +contraindicationsId.rows[0].max + 1 : +contraindicationsId.rows[0].id;
 
   const id =  await pool.query(`SELECT max(id) from Users`);
-  await pool.query(`INSERT INTO Users (id, firstName, lastName, patronymic, phone, address, selectedRation, selectedDaysActive, selectedCountDaysActive, contraindications_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [id.rows[0].max + 1, ...user.slice(0, 5), ...user.slice(6, user.length), newContraindicationsId]);
+  const data = [...user.slice(0, 4), ...user.slice(5, user.length)];
+  await pool.query(`INSERT INTO Users (id, firstName, lastName, patronymic, phone, address, selectedRation, selectedDaysActive, selectedCountDaysActive, contraindications_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [id.rows[0].max + 1, ...data, newContraindicationsId]);
   res.json('successfully');
   res.status(200);
 })
@@ -51,7 +51,6 @@ app.post('/addCallback/', async (req, res) => {
 app.get('/getMenu/', async (req, res) => {
   const food = await pool.query(`SELECT * FROM Food`);
   res.header("Access-Control-Allow-Origin", "*");
-  console.log(food.rows);
   res.status(200);
   res.json(food.rows);
 });
