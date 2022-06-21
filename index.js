@@ -30,7 +30,7 @@ app.post('/addUser/', async (req, res) => {
     await pool.query(`INSERT INTO Contraindications (id, contraindications) values ($1, $2)`, [+contraindicationsId.rows[0].max + 1, user[4]]);
   };
 
-  const newContraindicationsId = contraindicationsId?.rows[0]?.id == undefined ? +contraindicationsId.rows[0].max + 1 : +contraindicationsId.rows[0].id;
+  const newContraindicationsId = user[4] === '' ? null : contraindicationsId?.rows[0]?.id == undefined ? +contraindicationsId.rows[0].max + 1 : +contraindicationsId.rows[0].id;
 
   const id =  await pool.query(`SELECT max(id) from Users`);
   const data = [...user.slice(0, 4), ...user.slice(5, user.length)];
